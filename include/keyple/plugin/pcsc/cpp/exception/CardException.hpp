@@ -11,38 +11,34 @@
  * SPDX-License-Identifier: EPL-2.0                                           *
  ******************************************************************************/
 
-#include "keyple/plugin/pcsc/PcscSupportedContactProtocol.hpp"
+#pragma once
+
+#include "keyple/core/util/cpp/exception/Exception.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
+namespace cpp {
+namespace exception {
 
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3("ISO_7816_3", "3.*");
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3_T0("ISO_7816_3_T0", "3.*");
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3_T1("ISO_7816_3_T1", "3.*");
+using keyple::core::util::cpp::exception::Exception;
 
-PcscSupportedContactProtocol::PcscSupportedContactProtocol(
-    const std::string& name, const std::string& defaultRule)
-: mName(name)
-, mDefaultRule(defaultRule)
-{
+class CardException : public Exception {
+public:
+    /**
+     *
+     */
+    explicit CardException(const std::string& msg) : Exception(msg) {}
+
+    /**
+     *
+     */
+    CardException(const std::string& msg, const std::shared_ptr<Exception> cause)
+    : Exception(msg, cause) {}
+};
+
 }
-
-const std::string&
-PcscSupportedContactProtocol::getDefaultRule() const
-{
-    return mDefaultRule;
 }
-
-const std::string&
-PcscSupportedContactProtocol::getName() const
-{
-    return mName;
 }
-
-} /* namespace pcsc */
-} /* namespace plugin */
-} /* namespace keyple */
+}
+}

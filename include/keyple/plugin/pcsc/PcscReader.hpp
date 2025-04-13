@@ -1,32 +1,31 @@
-/**************************************************************************************************
- * Copyright (c) 2022 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
 #pragma once
 
+#include <cstdint>
 #include <ostream>
 #include <string>
 #include <vector>
 
-/* Keyple Core Common */
-#include "KeypleReaderExtension.h"
-
-/* Keyple Plugin Pcsc */
-#include "KeyplePluginPcscExport.h"
+#include "keyple/core/common/KeypleReaderExtension.hpp"
+#include "keyple/plugin/pcsc/KeyplePluginPcscExport.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 
-using namespace keyple::core::common;
+using keyple::core::common::KeypleReaderExtension;
 
 /**
  * PC/SC specific {@link KeypleReaderExtension}.
@@ -187,7 +186,8 @@ public:
      *       determine its type itself using the plugin parameters (see PcscPluginFactoryBuilder.
      * </ul>
      *
-     * <p>There is no default mode, so it is mandatory to set the mode by any of the above methods.
+     * <p>The default mode is the name-based determination performed by the plugin. See
+     * PcscPluginFactoryBuilder::Builder#useContactlessReaderIdentificationFilter(std::string).
      *
      * @param contactless true to set contactless mode, false to set contact mode.
      * @return This instance.
@@ -196,10 +196,10 @@ public:
     virtual PcscReader& setContactless(const bool contactless) = 0;
 
     /**
-     * Changes the protocol to be used by the PC/SC reader when connecting to the card ({@link
-     * IsoProtocol#T0}, {@link IsoProtocol#T1}, or {@link IsoProtocol#TCL}), or {@link
-     * IsoProtocol#ANY} to connect using any available protocol (default value {@link
-     * IsoProtocol#ANY}).
+     * Changes the protocol to be used by the PC/SC reader when connecting to the card (
+     * IsoProtocol::T0, IsoProtocol::T1, or IsoProtocol::TCL), or
+     * IsoProtocol::ANY to connect using any available protocol (default value
+     * IsoProtocol::ANY).
      *
      * @param isoProtocol The {@link IsoProtocol} to use (must be not null).
      * @return This instance.
@@ -209,15 +209,12 @@ public:
     virtual PcscReader& setIsoProtocol(const IsoProtocol& isoProtocol) = 0;
 
     /**
-     * Changes the action to be taken after disconnection (default value {@link
-     * DisconnectionMode#LEAVE}).
+     * Changes the action to be taken after disconnection (default value
+     * DisconnectionMode::RESET).
      *
      * <p>The card is either reset or left as is.
      *
-     * <p>The default value for this parameter if this method is not called is {@link
-     * DisconnectionMode#LEAVE}.
-     *
-     * @param disconnectionMode The {@link DisconnectionMode} to use (must be not null).
+     * @param disconnectionMode The DisconnectionMode to use (must be not null).
      * @return This instance.
      * @throw IllegalArgumentException If disconnectionMode is null
      * @since 2.0.0
@@ -231,8 +228,8 @@ public:
      * controlling LEDs, a buzzer or any other proprietary function defined by the reader
      * manufacturer.
      *
-     * <p>The supplied command identifier is internally converted into a control code expected by the
-     * current platform. Its actual value differs if the platform is Windows.
+     * <p>The supplied command identifier is internally converted into a control code expected by
+     * the current platform. Its actual value differs if the platform is Windows.
      *
      * @param commandId The command identifier.
      * @param command A not null byte array containing the command data.
@@ -270,6 +267,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const DisconnectionMode dm);
 };
 
-}
-}
-}
+} /* namespace pcsc */
+} /* namespace plugin */
+} /* namespace keyple */

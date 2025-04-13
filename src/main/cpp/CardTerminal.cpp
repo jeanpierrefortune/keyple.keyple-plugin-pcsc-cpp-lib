@@ -1,71 +1,75 @@
-/**************************************************************************************************
- * Copyright (c) 2022 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
-#include "CardTerminal.h"
+#include "keyple/plugin/pcsc/cpp/CardTerminal.hpp"
 
 #include <chrono>
+#include <cstdint>
 #include <cstring>
 
-/* Kepyle Core Util */
-#include "IllegalArgumentException.h"
-#include "KeypleStd.h"
-#include "System.h"
-
-/* Keyple Core Service */
-#include "Thread.h"
-
-/* PC/SC plugin */
-#include "CardTerminalException.h"
+#include "keyple/core/util/cpp/KeypleStd.hpp"
+#include "keyple/core/util/cpp/System.hpp"
+#include "keyple/core/util/cpp/Thread.hpp"
+#include "keyple/core/util/cpp/exception/IllegalArgumentException.hpp"
+#include "keyple/plugin/pcsc/cpp/exception/CardTerminalException.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 namespace cpp {
 
-using namespace keyple::core::util;
-using namespace keyple::core::util::cpp;
-using namespace keyple::core::util::cpp::exception;
-using namespace keyple::plugin::pcsc::cpp::exception;
+using keyple::core::util::cpp::System;
+using keyple::core::util::cpp::Thread;
+using keyple::core::util::cpp::exception::IllegalArgumentException;
+using keyple::plugin::pcsc::cpp::exception::CardTerminalException;
 
 using DisconnectionMode = PcscReader::DisconnectionMode;
 
 #ifdef WIN32
-std::string pcsc_stringify_error(LONG rv)
+std::string
+pcsc_stringify_error(uint64_t rv)
 {
     static char out[20];
-    sprintf_s(out, sizeof(out), "0x%08X", rv);
+    sprintf_s(out, sizeof(out), "0x%08X", static_cast<unsigned int>(rv));
 
     return std::string(out);
 }
 #endif
 
 CardTerminal::CardTerminal(const std::string& name)
-: mContext(0), mHandle(0), mState(0), mName(name), mContextEstablished(false)
+: mContext(0)
+, mHandle(0)
+, mState(0)
+, mName(name)
+, mContextEstablished(false)
 {
     memset(&mPioSendPCI, 0, sizeof(SCARD_IO_REQUEST));
 }
 
-const std::string& CardTerminal::getName() const
+const std::string&
+CardTerminal::getName() const
 {
     return mName;
 }
 
-const std::vector<std::string>& CardTerminal::listTerminals()
+const std::vector<std::string>&
+CardTerminal::listTerminals()
 {
     ULONG ret;
     SCARDCONTEXT context;
     char* readers = NULL;
-    char* ptr     = NULL;
-    DWORD len     = 0;
+    char* ptr = NULL;
+    DWORD len = 0;
     static std::vector<std::string> list;
 
     /* Clear list */
@@ -73,20 +77,15 @@ const std::vector<std::string>& CardTerminal::listTerminals()
 
     ret = SCardEstablishContext(SCARD_SCOPE_USER, NULL, NULL, &context);
     if (ret != SCARD_S_SUCCESS) {
-        throw CardTerminalException("SCardEstablishContext failed");
+        throw CardTerminalException(pcsc_stringify_error(ret));
     }
 
     ret = SCardListReaders(context, NULL, NULL, &len);
-    if (ret != SCARD_S_SUCCESS && ret != SCARD_E_NO_READERS_AVAILABLE) {
-        throw CardTerminalException("SCardListReaders failed");
+    if (ret != SCARD_S_SUCCESS) {
+        throw CardTerminalException(pcsc_stringify_error(ret));
     }
 
-    if (ret == SCARD_E_NO_READERS_AVAILABLE || len == 0) {
-        /* No readers to add to list */
-        return list;
-    }
-
-    readers = (char*)calloc(len, sizeof(char));
+    readers = static_cast<char*>(calloc(len, sizeof(char)));
 
     if (readers == NULL) {
         /* No readers to add to list */
@@ -95,7 +94,7 @@ const std::vector<std::string>& CardTerminal::listTerminals()
 
     ret = SCardListReaders(context, NULL, readers, &len);
     if (ret != SCARD_S_SUCCESS) {
-        throw CardTerminalException("SCardListReaders failed");
+        throw CardTerminalException(pcsc_stringify_error(ret));
     }
 
     ptr = readers;
@@ -116,7 +115,8 @@ const std::vector<std::string>& CardTerminal::listTerminals()
     return list;
 }
 
-void CardTerminal::establishContext()
+void
+CardTerminal::establishContext()
 {
     if (mContextEstablished)
         return;
@@ -124,15 +124,17 @@ void CardTerminal::establishContext()
     LONG ret = SCardEstablishContext(SCARD_SCOPE_USER, NULL, NULL, &mContext);
     if (ret != SCARD_S_SUCCESS) {
         mContextEstablished = false;
-        mLogger->error("SCardEstablishContext failed with error: %\n",
-                     std::string(pcsc_stringify_error(ret)));
+        mLogger->error(
+            "SCardEstablishContext failed with error: %\n",
+            std::string(pcsc_stringify_error(ret)));
         throw CardTerminalException("SCardEstablishContext failed");
     }
 
     mContextEstablished = true;
 }
 
-void CardTerminal::releaseContext()
+void
+CardTerminal::releaseContext()
 {
     if (!mContextEstablished)
         return;
@@ -141,34 +143,39 @@ void CardTerminal::releaseContext()
     mContextEstablished = false;
 }
 
-bool CardTerminal::connect()
+bool
+CardTerminal::connect()
 {
-    LONG rv = SCardConnect(mContext,
-                           (LPCSTR)mName.c_str(),
-                           SCARD_SHARE_SHARED,
-                           SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1,
-                           &mHandle,
-                           &mProtocol);
+    LONG rv = SCardConnect(
+        mContext,
+        (LPCSTR)mName.c_str(),
+        SCARD_SHARE_SHARED,
+        SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1,
+        &mHandle,
+        &mProtocol);
 
     return rv == SCARD_S_SUCCESS;
 }
 
-const std::vector<uint8_t> CardTerminal::transmitControlCommand(
+const std::vector<uint8_t>
+CardTerminal::transmitControlCommand(
     const int commandId, const std::vector<uint8_t>& command)
 {
     char r_apdu[261];
     DWORD dwRecv = sizeof(r_apdu);
 
-    LONG rv = SCardControl(mHandle,
-                          (DWORD)commandId,
-                          (LPCBYTE)command.data(),
-                          (DWORD)command.size(),
-                          (LPBYTE)r_apdu,
-                          (DWORD)sizeof(r_apdu),
-                          &dwRecv);
+    LONG rv = SCardControl(
+        mHandle,
+        (DWORD)commandId,
+        (LPCBYTE)command.data(),
+        (DWORD)command.size(),
+        (LPBYTE)r_apdu,
+        (DWORD)sizeof(r_apdu),
+        &dwRecv);
     if (rv != SCARD_S_SUCCESS) {
-        mLogger->error("SCardControl failed with error: %\n",
-                       std::string(pcsc_stringify_error(rv)));
+        mLogger->error(
+            "SCardControl failed with error: %\n",
+            std::string(pcsc_stringify_error(rv)));
         throw CardTerminalException("SCardControl failed");
     }
 
@@ -177,12 +184,14 @@ const std::vector<uint8_t> CardTerminal::transmitControlCommand(
     return response;
 }
 
-void CardTerminal::disconnect()
+void
+CardTerminal::disconnect()
 {
     SCardDisconnect(mHandle, SCARD_LEAVE_CARD);
 }
 
-bool CardTerminal::isCardPresent(bool release)
+bool
+CardTerminal::isCardPresent(bool release)
 {
     (void)release;
     try {
@@ -198,7 +207,8 @@ bool CardTerminal::isCardPresent(bool release)
     return status;
 }
 
-void CardTerminal::openAndConnect(const std::string& protocol)
+void
+CardTerminal::openAndConnect(const std::string& protocol)
 {
     LONG rv;
     DWORD connectProtocol;
@@ -225,27 +235,30 @@ void CardTerminal::openAndConnect(const std::string& protocol)
         connectProtocol = SCARD_PROTOCOL_T1;
     } else if (!protocol.compare("direct")) {
         connectProtocol = 0;
-        sharingMode     = SCARD_SHARE_DIRECT;
+        sharingMode = SCARD_SHARE_DIRECT;
     } else {
         throw IllegalArgumentException("Unsupported protocol " + protocol);
     }
 
-    mLogger->debug("openAndConnect - connecting tp % with protocol: %, "
-                   "connectProtocol: % and sharingMode: %\n",
-                   mName,
-                   protocol,
-                   connectProtocol,
-                   sharingMode);
+    mLogger->debug(
+        "openAndConnect - connecting tp % with protocol: %, "
+        "connectProtocol: % and sharingMode: %\n",
+        mName,
+        protocol,
+        connectProtocol,
+        sharingMode);
 
-    rv = SCardConnect(mContext,
-                      mName.c_str(),
-                      sharingMode,
-                      connectProtocol,
-                      &mHandle,
-                      &mProtocol);
+    rv = SCardConnect(
+        mContext,
+        mName.c_str(),
+        sharingMode,
+        connectProtocol,
+        &mHandle,
+        &mProtocol);
     if (rv != SCARD_S_SUCCESS) {
-        mLogger->error("openAndConnect - SCardConnect failed (%)\n",
-                       std::string(pcsc_stringify_error(rv)));
+        mLogger->error(
+            "openAndConnect - SCardConnect failed (%)\n",
+            std::string(pcsc_stringify_error(rv)));
         releaseContext();
         throw CardTerminalException("openAndConnect failed");
     }
@@ -259,11 +272,12 @@ void CardTerminal::openAndConnect(const std::string& protocol)
         break;
     }
 
-    rv = SCardStatus(mHandle, (LPSTR)reader, &readerLen, &mState,
-                     &mProtocol, _atr, &atrLen);
+    rv = SCardStatus(
+        mHandle, (LPSTR)reader, &readerLen, &mState, &mProtocol, _atr, &atrLen);
     if (rv != SCARD_S_SUCCESS) {
-        mLogger->error("openAndConnect - SCardStatus failed (s)\n",
-                      std::string(pcsc_stringify_error(rv)));
+        mLogger->error(
+            "openAndConnect - SCardStatus failed (s)\n",
+            std::string(pcsc_stringify_error(rv)));
         releaseContext();
         throw CardTerminalException("openAndConnect failed");
     } else {
@@ -274,21 +288,26 @@ void CardTerminal::openAndConnect(const std::string& protocol)
     mAtr.insert(mAtr.end(), _atr, _atr + atrLen);
 }
 
-void CardTerminal::closeAndDisconnect(const DisconnectionMode mode)
+void
+CardTerminal::closeAndDisconnect(const DisconnectionMode mode)
 {
     mLogger->debug("[%] closeAndDisconnect - mode: %\n", mName, mode);
 
-    SCardDisconnect(mHandle, mode == DisconnectionMode::RESET ? SCARD_RESET_CARD : SCARD_LEAVE_CARD);
+    SCardDisconnect(
+        mHandle,
+        mode == DisconnectionMode::RESET ? SCARD_RESET_CARD : SCARD_LEAVE_CARD);
 
     releaseContext();
 }
 
-const std::vector<uint8_t>& CardTerminal::getATR()
+const std::vector<uint8_t>&
+CardTerminal::getATR()
 {
     return mAtr;
 }
 
-std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apduIn)
+std::vector<uint8_t>
+CardTerminal::transmitApdu(const std::vector<uint8_t>& apduIn)
 {
     if (apduIn.size() == 0)
         throw IllegalArgumentException("command cannot be empty");
@@ -299,20 +318,19 @@ std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apdu
     /* To check */
     bool t0GetResponse = true;
     bool t1GetResponse = true;
-    bool t1StripLe     = true;
 
     /*
-     * Note that we modify the 'command' array in some cases, so it must be a copy of the
-     * application provided data
+     * Note that we modify the 'command' array in some cases, so it must be
+     * a copy of the application provided data
      */
-    int n   = static_cast<int>(_apduIn.size());
+    int n = static_cast<int>(_apduIn.size());
     bool t0 = mProtocol == SCARD_PROTOCOL_T0;
     bool t1 = mProtocol == SCARD_PROTOCOL_T1;
 
     if (t0 && (n >= 7) && (_apduIn[4] == 0))
         throw CardTerminalException("Extended len. not supported for T=0");
 
-    if ((t0 || (t1 && t1StripLe)) && (n >= 7)) {
+    if ((t0 || t1) && (n >= 7)) {
         int lc = _apduIn[4] & 0xff;
         if (lc != 0) {
             if (n == lc + 6) {
@@ -337,20 +355,22 @@ std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apdu
 
         char r_apdu[261];
         DWORD dwRecv = sizeof(r_apdu);
-        long rv;
+        uint64_t rv;
 
         mLogger->debug("[%] transmitApdu - c-apdu >> %\n", mName, _apduIn);
 
-        rv = SCardTransmit(mHandle,
-                           &mPioSendPCI,
-                           (LPCBYTE)_apduIn.data(),
-                           static_cast<DWORD>(_apduIn.size()),
-                           NULL,
-                           (LPBYTE)r_apdu,
-                           &dwRecv);
+        rv = SCardTransmit(
+            mHandle,
+            &mPioSendPCI,
+            (LPCBYTE)_apduIn.data(),
+            static_cast<DWORD>(_apduIn.size()),
+            NULL,
+            (LPBYTE)r_apdu,
+            &dwRecv);
         if (rv != SCARD_S_SUCCESS) {
-            mLogger->error("SCardTransmit failed with error: %\n",
-                           std::string(pcsc_stringify_error(rv)));
+            mLogger->error(
+                "SCardTransmit failed with error: %\n",
+                std::string(pcsc_stringify_error(rv)));
             throw CardTerminalException("ScardTransmit failed");
         }
 
@@ -368,9 +388,13 @@ std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apdu
             }
 
             if (response[rn - 2] == 0x61) {
-                /* Issue a GET RESPONSE command with the same CLA using SW2 as short Le field */
+                /* Issue a GET RESPONSE command with the same CLA using SW2
+                 * as short Le field */
                 if (rn > 2)
-                    result.insert(result.end(), response.begin(), response.begin() + rn - 2);
+                    result.insert(
+                        result.end(),
+                        response.begin(),
+                        response.begin() + rn - 2);
 
                 std::vector<uint8_t> getResponse(5);
                 getResponse[0] = _apduIn[0];
@@ -378,7 +402,7 @@ std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apdu
                 getResponse[2] = 0;
                 getResponse[3] = 0;
                 getResponse[4] = response[rn - 1];
-                n          = 5;
+                n = 5;
                 _apduIn.swap(getResponse);
                 continue;
             }
@@ -391,19 +415,24 @@ std::vector<uint8_t> CardTerminal::transmitApdu(const std::vector<uint8_t>& apdu
     return result;
 }
 
-void CardTerminal::beginExclusive()
+void
+CardTerminal::beginExclusive()
 {
 }
 
-void CardTerminal::endExclusive()
+void
+CardTerminal::endExclusive()
 {
 }
 
-bool CardTerminal::waitForCardAbsent(long timeout)
+bool
+CardTerminal::waitForCardAbsent(uint64_t timeout)
 {
     uint64_t newMs = 0;
-    uint64_t currentMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                         std::chrono::system_clock::now().time_since_epoch()).count();
+    uint64_t currentMs
+        = std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::system_clock::now().time_since_epoch())
+              .count();
 
     do {
         bool isCardAbsent = !this->isCardPresent(false);
@@ -412,18 +441,22 @@ bool CardTerminal::waitForCardAbsent(long timeout)
         }
 
         newMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
 
     } while (newMs <= (currentMs + timeout));
 
     return false;
 }
 
-bool CardTerminal::waitForCardPresent(long timeout)
+bool
+CardTerminal::waitForCardPresent(uint64_t timeout)
 {
     uint64_t newMs = 0;
-    uint64_t currentMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                         std::chrono::system_clock::now().time_since_epoch()).count();
+    uint64_t currentMs
+        = std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::system_clock::now().time_since_epoch())
+              .count();
 
     do {
         bool isCardPresent = this->isCardPresent(false);
@@ -432,33 +465,37 @@ bool CardTerminal::waitForCardPresent(long timeout)
         }
 
         newMs = std::chrono::duration_cast<std::chrono::milliseconds>(
-                     std::chrono::system_clock::now().time_since_epoch()).count();
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
 
     } while (newMs <= (currentMs + timeout));
 
     return false;
 }
 
-bool CardTerminal::operator==(const CardTerminal& o) const
+bool
+CardTerminal::operator==(const CardTerminal& o) const
 {
     return !mName.compare(o.mName);
 }
 
-bool CardTerminal::operator!=(const CardTerminal& o) const
+bool
+CardTerminal::operator!=(const CardTerminal& o) const
 {
-	return !(*this == o);
+    return !(*this == o);
 }
 
-std::ostream& operator<<(std::ostream& os, const CardTerminal& t)
+std::ostream&
+operator<<(std::ostream& os, const CardTerminal& t)
 {
     os << "CardTerminal: {"
-       << "NAME = " << t.mName
-	   << "}";
+       << "NAME = " << t.mName << "}";
 
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const std::vector<CardTerminal>& vt)
+std::ostream&
+operator<<(std::ostream& os, const std::vector<CardTerminal>& vt)
 {
     os << "CardTerminalS: {";
     for (const auto& t : vt) {
@@ -466,12 +503,12 @@ std::ostream& operator<<(std::ostream& os, const std::vector<CardTerminal>& vt)
         if (t != vt.back())
             os << ", ";
     }
-	os << "}";
+    os << "}";
 
     return os;
 }
 
-}
-}
-}
-}
+} /* namespace cpp */
+} /* namespace pcsc */
+} /* namespace plugin */
+} /* namespace keyple */

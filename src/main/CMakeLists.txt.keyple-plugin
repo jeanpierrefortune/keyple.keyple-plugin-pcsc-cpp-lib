@@ -11,5 +11,33 @@
 #* SPDX-License-Identifier: EPL-2.0                                           *
 #******************************************************************************/
 
-# Add projects
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/main)
+# FetchContent added in CMake 3.11, downloads during the configure step
+# FetchContent_MakeAvailable was added in CMake 3.14; simpler usage
+INCLUDE(FetchContent)
+
+IF(NOT EXISTS "${CMAKE_BINARY_DIR}/_deps/keypleplugincppapi-src")
+
+    MESSAGE("-- > Fetching keyple plugin from keyple plugin pcsc")
+
+    # Checkout Keyple Plugin Cpp Api dependency
+    FetchContent_Declare(
+
+        KeyplePluginCppApi
+
+        DOWNLOAD_EXTRACT_TIMESTAMP true
+        GIT_REPOSITORY https://github.com/eclipse-keyple/keyple-plugin-cpp-api
+        GIT_TAG develop-2.3.1
+    )
+
+ELSE()
+
+    FetchContent_Declare(
+
+        KeyplePluginCppApi
+
+        SOURCE_DIR ${CMAKE_BINARY_DIR}/_deps/keypleplugincppapi-src
+    )
+
+ENDIF()
+
+FetchContent_MakeAvailable(KeyplePluginCppApi)

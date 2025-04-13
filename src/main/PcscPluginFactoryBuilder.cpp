@@ -1,64 +1,84 @@
-/**************************************************************************************************
- * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
-#include "PcscPluginFactoryBuilder.h"
+#include "keyple/plugin/pcsc/PcscPluginFactoryBuilder.hpp"
 
-/* Keyple Plugin Pcsc */
-#include "PcscPluginFactoryAdapter.h"
-
-/* Keyple Core Util */
-#include "KeypleAssert.h"
+#include "keyple/core/util/KeypleAssert.hpp"
+#include "keyple/core/util/cpp/Pattern.hpp"
+#include "keyple/core/util/cpp/exception/Exception.hpp"
+#include "keyple/core/util/cpp/exception/IllegalArgumentException.hpp"
+#include "keyple/plugin/pcsc/PcscPluginFactoryAdapter.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 
-using namespace keyple::core::util;
+using keyple::core::util::Assert;
+using keyple::core::util::cpp::Pattern;
+using keyple::core::util::cpp::exception::Exception;
+using keyple::core::util::cpp::exception::IllegalArgumentException;
 
 using Builder = PcscPluginFactoryBuilder::Builder;
 
-/* BUILDER -------------------------------------------------------------------------------------- */
+const std::string Builder::DEFAULT_CONTACTLESS_READER_FILTER
+    = ".*(contactless|ask logo|acs acr122).*";
 
-Builder::Builder() {}
+/* BUILDER ------------------------------------------------------------------ */
 
-Builder& Builder::useContactReaderIdentificationFilter(
-    const std::string contactReaderIdentificationFilter)
+Builder::Builder()
+: mContactlessReaderIdentificationFilterPattern(
+    Pattern::compile(Builder::DEFAULT_CONTACTLESS_READER_FILTER))
+, mCardMonitoringCycleDuration(500)
 {
-    Assert::getInstance().notEmpty(contactReaderIdentificationFilter,
-                                   "contactReaderIdentificationFilter");
+}
 
-    mContactReaderIdentificationFilter = contactReaderIdentificationFilter;
+Builder&
+Builder::useContactReaderIdentificationFilter(
+    const std::string& /*contactReaderIdentificationFilter*/)
+{
+    return *this;
+}
+
+Builder&
+Builder::useContactlessReaderIdentificationFilter(
+    const std::string& contactlessReaderIdentificationFilter)
+{
+    Assert::getInstance().notEmpty(
+        contactlessReaderIdentificationFilter,
+        "contactlessReaderIdentificationFilter");
+
+    try {
+        mContactlessReaderIdentificationFilterPattern
+            = Pattern::compile(contactlessReaderIdentificationFilter);
+
+    } catch (const Exception& e) {
+        throw IllegalArgumentException(
+            "Bad regular expression.", std::make_shared<Exception>(e));
+    }
 
     return *this;
 }
 
-Builder& Builder::useContactlessReaderIdentificationFilter(
-    const std::string contactlessReaderIdentificationFilter)
-{
-    Assert::getInstance().notEmpty(contactlessReaderIdentificationFilter,
-                                   "contactlessReaderIdentificationFilter");
-
-    mContactlessReaderIdentificationFilter = contactlessReaderIdentificationFilter;
-
-    return *this;
-}
-
-Builder& Builder::updateProtocolIdentificationRule(const std::string& readerProtocolName,
-                                                   const std::string& protocolRule)
+Builder&
+Builder::updateProtocolIdentificationRule(
+    const std::string& readerProtocolName, const std::string& protocolRule)
 {
     Assert::getInstance().notEmpty(readerProtocolName, "readerProtocolName");
+
     if (protocolRule == "") {
         /* Disable the protocol by defining a regex that always fails */
         mProtocolRulesMap.insert({readerProtocolName, "X"});
+
     } else {
         mProtocolRulesMap.insert({readerProtocolName, protocolRule});
     }
@@ -66,20 +86,34 @@ Builder& Builder::updateProtocolIdentificationRule(const std::string& readerProt
     return *this;
 }
 
-std::shared_ptr<PcscPluginFactory> PcscPluginFactoryBuilder::Builder::build()
+Builder&
+Builder::setCardMonitoringCycleDuration(const int cycleDuration)
 {
-    return std::make_shared<PcscPluginFactoryAdapter>(mContactReaderIdentificationFilter,
-                                                      mContactlessReaderIdentificationFilter,
-                                                      mProtocolRulesMap);
+    Assert::getInstance().greaterOrEqual(cycleDuration, 1, "cycleDuration");
+
+    mCardMonitoringCycleDuration = cycleDuration;
+
+    return *this;
 }
 
-/* PCSC PLUGIN FACTORY BUILDER ------------------------------------------------------------------ */
+std::shared_ptr<PcscPluginFactory>
+PcscPluginFactoryBuilder::Builder::build()
+{
+    return std::make_shared<PcscPluginFactoryAdapter>(
+            mContactlessReaderIdentificationFilterPattern,
+            mProtocolRulesMap,
+            mCardMonitoringCycleDuration);
+}
 
-std::unique_ptr<Builder> PcscPluginFactoryBuilder::builder()
+/* PCSC PLUGIN FACTORY BUILDER
+ * ------------------------------------------------------------------ */
+
+std::unique_ptr<Builder>
+PcscPluginFactoryBuilder::builder()
 {
     return std::unique_ptr<Builder>(new Builder());
 }
 
-}
-}
-}
+} /* namespace pcsc */
+} /* namespace plugin */
+} /* namespace keyple */
