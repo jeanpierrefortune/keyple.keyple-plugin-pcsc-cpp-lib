@@ -60,6 +60,11 @@ public:
     /**
      *
      */
+    bool isConnected();
+
+    /**
+     *
+     */
     void openAndConnect(const std::string& protocol);
 
     /**

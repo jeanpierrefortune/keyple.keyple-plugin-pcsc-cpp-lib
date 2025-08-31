@@ -483,21 +483,28 @@ const std::vector<uint8_t>
 PcscReaderAdapter::transmitControlCommand(
     const int commandId, const std::vector<uint8_t>& command)
 {
+    bool temporaryConnection = false;
     std::vector<uint8_t> response;
     const int controlCode
         = mIsWindows ? 0x00310000 | (commandId << 2) : 0x42000000 | commandId;
 
     try {
         if (mTerminal != nullptr) {
+
+            if (!mTerminal->isConnected()) {
+                temporaryConnection = true;
+                mTerminal->openAndConnect("DIRECT");
+            }
+
             response = mTerminal->transmitControlCommand(controlCode, command);
+
+            if (temporaryConnection) {
+                mTerminal->closeAndDisconnect(DisconnectionMode::LEAVE);
+            }
 
         } else {
             /* C++ don't do virtual cards for now... */
             throw IllegalStateException("Reader failure.");
-
-            // std::shared_ptr<Card> virtualCard = terminal->connect("DIRECT");
-            // response = virtualCard->transmitControlCommand(controlCode,
-            // command); virtualCard->disconnect(false);
         }
 
     } catch (const CardException& e) {

@@ -188,6 +188,8 @@ void
 CardTerminal::disconnect()
 {
     SCardDisconnect(mHandle, SCARD_LEAVE_CARD);
+
+    mHandle = 0;
 }
 
 bool
@@ -205,6 +207,12 @@ CardTerminal::isCardPresent(bool release)
     disconnect();
 
     return status;
+}
+
+bool
+CardTerminal::isConnected()
+{
+    return mContextEstablished && mHandle;
 }
 
 void
@@ -241,7 +249,7 @@ CardTerminal::openAndConnect(const std::string& protocol)
     }
 
     mLogger->debug(
-        "openAndConnect - connecting tp % with protocol: %, "
+        "openAndConnect - connecting to % with protocol: %, "
         "connectProtocol: % and sharingMode: %\n",
         mName,
         protocol,

@@ -20,7 +20,7 @@ namespace pcsc {
 const PcscSupportedContactlessProtocol
     PcscSupportedContactlessProtocol::ISO_14443_4(
         "ISO_14443_4",
-        "3B8880....................|3B8B80.*|3B8C800150.*|.*4F4D4141544C4153."
+        "3B8[0-9A-F]8001(?!.*5A0A)(?!804F0CA000000306).*"
         "*");
 const PcscSupportedContactlessProtocol
     PcscSupportedContactlessProtocol::INNOVATRON_B_PRIME_CARD(

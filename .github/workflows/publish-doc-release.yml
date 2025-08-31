@@ -21,7 +21,7 @@ jobs:
         working-directory: .
         run: ./.github/scripts/patch_doxyfile.sh ${{ env.PROJECT_VERSION }}
       - name: Generate project documentation with Doxygen
-        uses: mattnotmitt/doxygen-action@v1.9.2
+        uses: mattnotmitt/doxygen-action@592353912f380a976df0007746e939a002cabae2
         with:
           working-directory: .github/doxygen/
           doxyfile-path: ./Doxyfile
