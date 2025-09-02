@@ -47,6 +47,7 @@ PcscReaderAdapter::PcscReaderAdapter(
 , mPluginAdapter(pluginAdapter)
 , mCardMonitoringCycleDuration(cardMonitoringCycleDuration)
 , mIsContactless(false)
+, mProtocol(IsoProtocol::ANY.getValue())
 , mIsModeExclusive(false)
 , mLoopWaitCard(false)
 , mLoopWaitCardRemoval(false)
