@@ -20,6 +20,7 @@ namespace pcsc {
 /* ISO PROTOCOL ------------------------------------------------------------- */
 
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::ANY("*");
+const PcscReader::IsoProtocol PcscReader::IsoProtocol::DIRECT("DIRECT");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::T0("T=0");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::T1("T=1");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::TCL("T=CL");
@@ -42,6 +43,8 @@ operator<<(std::ostream& os, const PcscReader::IsoProtocol& ip)
 
     if (ip == PcscReader::IsoProtocol::ANY) {
         os << "ANY";
+    } else if (ip == PcscReader::IsoProtocol::DIRECT) {
+        os << "DIRECT";
     } else if (ip == PcscReader::IsoProtocol::T0) {
         os << "T0";
     } else if (ip == PcscReader::IsoProtocol::T1) {

@@ -494,7 +494,8 @@ PcscReaderAdapter::transmitControlCommand(
 
             if (!mTerminal->isConnected()) {
                 temporaryConnection = true;
-                mTerminal->openAndConnect("DIRECT");
+                mTerminal->openAndConnect(
+                    PcscReader::IsoProtocol::DIRECT.getValue());
             }
 
             response = mTerminal->transmitControlCommand(controlCode, command);

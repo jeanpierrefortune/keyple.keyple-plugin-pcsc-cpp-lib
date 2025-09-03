@@ -235,13 +235,13 @@ CardTerminal::openAndConnect(const std::string& protocol)
         throw;
     }
 
-    if (!protocol.compare("*")) {
+    if (!protocol.compare(PcscReader::IsoProtocol::ANY.getValue())) {
         connectProtocol = SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1;
-    } else if (!protocol.compare("T=0")) {
+    } else if (!protocol.compare(PcscReader::IsoProtocol::T0.getValue())) {
         connectProtocol = SCARD_PROTOCOL_T0;
-    } else if (!protocol.compare("T=1")) {
+    } else if (!protocol.compare(PcscReader::IsoProtocol::T1.getValue())) {
         connectProtocol = SCARD_PROTOCOL_T1;
-    } else if (!protocol.compare("direct")) {
+    } else if (!protocol.compare(PcscReader::IsoProtocol::DIRECT.getValue())) {
         connectProtocol = 0;
         sharingMode = SCARD_SHARE_DIRECT;
     } else {
