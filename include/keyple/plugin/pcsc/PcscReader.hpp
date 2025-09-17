@@ -76,6 +76,13 @@ public:
         static const IsoProtocol ANY;
 
         /**
+         * to connect using direct protocol
+         *
+         * @since 2.4.2
+         */
+        static const IsoProtocol DIRECT;
+
+        /**
          * to connect using T=0 protocol
          *
          * @since 2.0.0

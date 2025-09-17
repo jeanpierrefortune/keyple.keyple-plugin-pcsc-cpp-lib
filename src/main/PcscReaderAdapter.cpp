@@ -47,6 +47,7 @@ PcscReaderAdapter::PcscReaderAdapter(
 , mPluginAdapter(pluginAdapter)
 , mCardMonitoringCycleDuration(cardMonitoringCycleDuration)
 , mIsContactless(false)
+, mProtocol(IsoProtocol::ANY.getValue())
 , mIsModeExclusive(false)
 , mLoopWaitCard(false)
 , mLoopWaitCardRemoval(false)
@@ -493,7 +494,8 @@ PcscReaderAdapter::transmitControlCommand(
 
             if (!mTerminal->isConnected()) {
                 temporaryConnection = true;
-                mTerminal->openAndConnect("DIRECT");
+                mTerminal->openAndConnect(
+                    PcscReader::IsoProtocol::DIRECT.getValue());
             }
 
             response = mTerminal->transmitControlCommand(controlCode, command);
