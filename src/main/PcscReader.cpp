@@ -1,41 +1,50 @@
-/**************************************************************************************************
- * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
-#include "PcscReader.h"
+#include "keyple/plugin/pcsc/PcscReader.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 
-/* ISO PROTOCOL --------------------------------------------------------------------------------- */
+/* ISO PROTOCOL ------------------------------------------------------------- */
 
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::ANY("*");
+const PcscReader::IsoProtocol PcscReader::IsoProtocol::DIRECT("DIRECT");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::T0("T=0");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::T1("T=1");
 const PcscReader::IsoProtocol PcscReader::IsoProtocol::TCL("T=CL");
 
-PcscReader::IsoProtocol::IsoProtocol(const std::string& value) : mValue(value) {}
+PcscReader::IsoProtocol::IsoProtocol(const std::string& value)
+: mValue(value)
+{
+}
 
-const std::string& PcscReader::IsoProtocol::getValue() const
+const std::string&
+PcscReader::IsoProtocol::getValue() const
 {
     return mValue;
 }
 
-std::ostream& operator<<(std::ostream& os, const PcscReader::IsoProtocol& ip)
+std::ostream&
+operator<<(std::ostream& os, const PcscReader::IsoProtocol& ip)
 {
-    os << "ISO_PROTOCOL = ";
-    
+    os << "ISO_PROTOCOL: ";
+
     if (ip == PcscReader::IsoProtocol::ANY) {
         os << "ANY";
+    } else if (ip == PcscReader::IsoProtocol::DIRECT) {
+        os << "DIRECT";
     } else if (ip == PcscReader::IsoProtocol::T0) {
         os << "T0";
     } else if (ip == PcscReader::IsoProtocol::T1) {
@@ -49,18 +58,20 @@ std::ostream& operator<<(std::ostream& os, const PcscReader::IsoProtocol& ip)
     return os;
 }
 
-bool PcscReader::IsoProtocol::operator==(const PcscReader::IsoProtocol& ip) const
+bool
+PcscReader::IsoProtocol::operator==(const PcscReader::IsoProtocol& ip) const
 {
     return ip.getValue() == this->getValue();
 }
 
-/* SHARING MODE --------------------------------------------------------------------------------- */
+/* SHARING MODE ------------------------------------------------------------- */
 
-std::ostream& operator<<(std::ostream& os, const PcscReader::SharingMode sm)
+std::ostream&
+operator<<(std::ostream& os, const PcscReader::SharingMode sm)
 {
-    os << "SHARING_MODE = ";
-    
-    switch(sm) {
+    os << "SHARING_MODE: ";
+
+    switch (sm) {
     case PcscReader::SharingMode::EXCLUSIVE:
         os << "EXCLUSIVE";
         break;
@@ -75,13 +86,14 @@ std::ostream& operator<<(std::ostream& os, const PcscReader::SharingMode sm)
     return os;
 }
 
-/* DISCONNECTION MODE --------------------------------------------------------------------------- */
+/* DISCONNECTION MODE ------------------------------------------------------- */
 
-std::ostream& operator<<(std::ostream& os, const PcscReader::DisconnectionMode dm)
+std::ostream&
+operator<<(std::ostream& os, const PcscReader::DisconnectionMode dm)
 {
-    os << "DISCONNECTION_MODE = ";
-    
-    switch(dm) {
+    os << "DISCONNECTION_MODE: ";
+
+    switch (dm) {
     case PcscReader::DisconnectionMode::RESET:
         os << "RESET";
         break;
@@ -96,7 +108,6 @@ std::ostream& operator<<(std::ostream& os, const PcscReader::DisconnectionMode d
     return os;
 }
 
-
-}
-}
-}
+} /* namespace pcsc */
+} /* namespace plugin */
+} /* namespace keyple */

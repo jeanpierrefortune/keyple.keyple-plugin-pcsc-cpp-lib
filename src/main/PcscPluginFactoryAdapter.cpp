@@ -1,70 +1,76 @@
-/**************************************************************************************************
- * Copyright (c) 2021 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
-#include "PcscPluginFactoryAdapter.h"
+#include "keyple/plugin/pcsc/PcscPluginFactoryAdapter.hpp"
 
-/* Keyple Plugin Pcsc */
-#include "AbstractPcscPluginAdapter.h"
-#include "PcscPluginAdapter.h"
-#include "PcscPluginFactory.h"
-
-/* Keyple Core Plugin */
-#include "PluginApiProperties.h"
-
-/* Keyple Core Common */
-#include "CommonApiProperties.h"
+#include "keyple/core/common/CommonApiProperties.hpp"
+#include "keyple/core/plugin/PluginApiProperties.hpp"
+#include "keyple/plugin/pcsc/PcscPluginAdapter.hpp"
+#include "keyple/plugin/pcsc/PcscPluginFactory.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 
-using namespace keyple::core::common;
-using namespace keyple::core::plugin;
+using keyple::core::common::CommonApiProperties_VERSION;
+using keyple::core::plugin::PluginApiProperties_VERSION;
 
 const std::string PcscPluginFactoryAdapter::PLUGIN_NAME = "PcscPlugin";
 
 PcscPluginFactoryAdapter::PcscPluginFactoryAdapter(
-  const std::string& contactReaderIdentificationFilter,
-  const std::string& contactlessReaderIdentificationFilter,
-  const std::map<std::string, std::string>& protocolRulesMap)
-: mContactReaderIdentificationFilter(contactReaderIdentificationFilter),
-  mContactlessReaderIdentificationFilter(contactlessReaderIdentificationFilter),
-  mProtocolRulesMap(protocolRulesMap) {}
+    const std::shared_ptr<Pattern> contactlessReaderIdentificationFilterPattern,
+    const std::map<std::string, std::string>& protocolRulesMap,
+    const int cardMonitoringCycleDuration)
+: mProtocolRulesMap(protocolRulesMap)
+, mContactlessReaderIdentificationFilterPattern(
+      contactlessReaderIdentificationFilterPattern)
+, mCardMonitoringCycleDuration(cardMonitoringCycleDuration)
+{
+}
 
-const std::string& PcscPluginFactoryAdapter::getPluginApiVersion() const
+const std::string
+PcscPluginFactoryAdapter::getPluginApiVersion() const
 {
     return PluginApiProperties_VERSION;
 }
 
-const std::string& PcscPluginFactoryAdapter::getCommonApiVersion() const
+const std::string
+PcscPluginFactoryAdapter::getCommonApiVersion() const
 {
     return CommonApiProperties_VERSION;
 }
 
-const std::string& PcscPluginFactoryAdapter::getPluginName() const
+const std::string&
+PcscPluginFactoryAdapter::getPluginName() const
 {
     return PLUGIN_NAME;
 }
 
-std::shared_ptr<PluginSpi> PcscPluginFactoryAdapter::getPlugin()
+std::shared_ptr<PluginSpi>
+PcscPluginFactoryAdapter::getPlugin()
 {
-    std::shared_ptr<AbstractPcscPluginAdapter> plugin = PcscPluginAdapter::getInstance();
-    plugin->setContactReaderIdentificationFilter(mContactReaderIdentificationFilter)
-           .setContactlessReaderIdentificationFilter(mContactlessReaderIdentificationFilter)
-           .addProtocolRulesMap(mProtocolRulesMap);
+    std::shared_ptr<PcscPluginAdapter> plugin
+        = PcscPluginAdapter::getInstance();
+
+    plugin
+        ->setContactlessReaderIdentificationFilterPattern(
+            mContactlessReaderIdentificationFilterPattern)
+        .addProtocolRulesMap(mProtocolRulesMap)
+        .setCardMonitoringCycleDuration(mCardMonitoringCycleDuration);
 
     return plugin;
 }
 
-}
-}
-}
+} /* namespace pcsc */
+} /* namespace plugin */
+} /* namespace keyple */

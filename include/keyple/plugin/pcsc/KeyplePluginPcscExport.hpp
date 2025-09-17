@@ -11,38 +11,14 @@
  * SPDX-License-Identifier: EPL-2.0                                           *
  ******************************************************************************/
 
-#include "keyple/plugin/pcsc/PcscSupportedContactProtocol.hpp"
+#pragma once
 
-namespace keyple {
-namespace plugin {
-namespace pcsc {
-
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3("ISO_7816_3", "3.*");
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3_T0("ISO_7816_3_T0", "3.*");
-const PcscSupportedContactProtocol
-    PcscSupportedContactProtocol::ISO_7816_3_T1("ISO_7816_3_T1", "3.*");
-
-PcscSupportedContactProtocol::PcscSupportedContactProtocol(
-    const std::string& name, const std::string& defaultRule)
-: mName(name)
-, mDefaultRule(defaultRule)
-{
-}
-
-const std::string&
-PcscSupportedContactProtocol::getDefaultRule() const
-{
-    return mDefaultRule;
-}
-
-const std::string&
-PcscSupportedContactProtocol::getName() const
-{
-    return mName;
-}
-
-} /* namespace pcsc */
-} /* namespace plugin */
-} /* namespace keyple */
+#if defined(WIN32)
+#if defined(KEYPLEPLUGINPCSC_EXPORT)
+#define KEYPLEPLUGINPCSC_API __declspec(dllexport)
+#else
+#define KEYPLEPLUGINPCSC_API __declspec(dllimport)
+#endif
+#else
+#define KEYPLEPLUGINPCSC_API
+#endif

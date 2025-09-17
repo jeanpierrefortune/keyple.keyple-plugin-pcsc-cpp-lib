@@ -1,38 +1,37 @@
-/**************************************************************************************************
- * Copyright (c) 2022 Calypso Networks Association https://calypsonet.org/                        *
- *                                                                                                *
- * See the NOTICE file(s) distributed with this work for additional information regarding         *
- * copyright ownership.                                                                           *
- *                                                                                                *
- * This program and the accompanying materials are made available under the terms of the Eclipse  *
- * Public License 2.0 which is available at http://www.eclipse.org/legal/epl-2.0                  *
- *                                                                                                *
- * SPDX-License-Identifier: EPL-2.0                                                               *
- **************************************************************************************************/
+/******************************************************************************
+ * Copyright (c) 2025 Calypso Networks Association https://calypsonet.org/    *
+ *                                                                            *
+ * See the NOTICE file(s) distributed with this work for additional           *
+ * information regarding copyright ownership.                                 *
+ *                                                                            *
+ * This program and the accompanying materials are made available under the   *
+ * terms of the Eclipse Public License 2.0 which is available at              *
+ * http://www.eclipse.org/legal/epl-2.0                                       *
+ *                                                                            *
+ * SPDX-License-Identifier: EPL-2.0                                           *
+ ******************************************************************************/
 
 #pragma once
 
-/* Keyple Core Util */
-#include "LoggerFactory.h"
-
-/* Keyple Plugin Pcsc */
-#include "KeyplePluginPcscExport.h"
-#include "PcscReader.h"
-
-/* PC/SC */
 #if defined(WIN32) || defined(__MINGW32__) || defined(__MINGW64__)
 #include <winscard.h>
 #else
-#include <PCSC/winscard.h>
 #include <PCSC/wintypes.h>
+#include <PCSC/winscard.h>
 #endif
+
+#include "keyple/core/util/cpp/Logger.hpp"
+#include "keyple/core/util/cpp/LoggerFactory.hpp"
+#include "keyple/plugin/pcsc/KeyplePluginPcscExport.hpp"
+#include "keyple/plugin/pcsc/PcscReader.hpp"
 
 namespace keyple {
 namespace plugin {
 namespace pcsc {
 namespace cpp {
 
-using namespace keyple::core::util::cpp;
+using keyple::core::util::cpp::Logger;
+using keyple::core::util::cpp::LoggerFactory;
 
 using DisconnectionMode = PcscReader::DisconnectionMode;
 
@@ -57,6 +56,11 @@ public:
      *
      */
     bool isCardPresent(bool release);
+
+    /**
+     *
+     */
+    bool isConnected();
 
     /**
      *
@@ -102,12 +106,12 @@ public:
     /**
      *
      */
-    bool waitForCardAbsent(long timeout);
+    bool waitForCardAbsent(uint64_t timeout);
 
     /**
      *
      */
-    bool waitForCardPresent(long timeout);
+    bool waitForCardPresent(uint64_t timeout);
 
 	/**
 	 *
