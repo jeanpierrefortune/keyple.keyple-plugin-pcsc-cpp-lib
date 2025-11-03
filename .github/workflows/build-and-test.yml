@@ -1,10 +1,11 @@
-name: Build and test code
+name: Build and Test code
 
 on:
   push:
     branches:
       - main
   pull_request:
+
 
 jobs:
   call-reusable-workflow:
