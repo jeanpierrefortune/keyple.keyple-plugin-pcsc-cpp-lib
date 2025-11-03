@@ -10,3 +10,5 @@ on:
 jobs:
   call-reusable-workflow:
     uses: jeanpierrefortune/keyple.keyple-actions/.github/workflows/reusable-cpp-build-and-test.yml@main
+    with:
+      extra_linux_deps: 'libpcsclite-dev'
