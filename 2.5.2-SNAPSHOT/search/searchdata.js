@@ -1,10 +1,11 @@
 var indexSectionsWithContent =
 {
-  0: "bcdkopt",
+  0: "bcdkmopt",
   1: "k",
-  2: "cpt",
+  2: "cmpt",
   3: "o",
-  4: "bd"
+  4: "bd",
+  5: "k"
 };
 
 var indexSectionNames =
@@ -13,7 +14,8 @@ var indexSectionNames =
   1: "namespaces",
   2: "files",
   3: "functions",
-  4: "typedefs"
+  4: "typedefs",
+  5: "pages"
 };
 
 var indexSectionLabels =
@@ -22,6 +24,7 @@ var indexSectionLabels =
   1: "Namespaces",
   2: "Files",
   3: "Functions",
-  4: "Typedefs"
+  4: "Typedefs",
+  5: "Pages"
 };
 
