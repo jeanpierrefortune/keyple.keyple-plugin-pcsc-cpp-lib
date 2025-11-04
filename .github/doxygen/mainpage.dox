@@ -1,0 +1,86 @@
+/**
+ * @mainpage Keyple Plugin PC/SC C++ Library Documentation
+ *
+ * @section overview Overview
+ *
+ * The **Keyple Plugin PC/SC C++ Library** is a Keyple add-on that enables applications
+ * to interact with PC/SC (Personal Computer/Smart Card) compliant readers. This library
+ * provides a bridge between the Keyple framework and the PC/SC standard, supporting both
+ * contact and contactless smart card readers.
+ *
+ * This C++ implementation is built with **CLang / GCC / MSVC** to support a wide range
+ * of applications and platforms.
+ *
+ * @section architecture Architecture & Components
+ *
+ * @subsection plugin_configuration Plugin Configuration
+ *
+ * - keyple::plugin::pcsc::PcscPluginFactoryBuilder
+ *   Builder for creating and configuring PC/SC plugin instances
+ *
+ * - keyple::plugin::pcsc::PcscPluginFactory
+ *   Factory for creating PC/SC plugin instances with custom configuration
+ *
+ * - keyple::plugin::pcsc::PcscPlugin
+ *   Main plugin interface extending KeyplePluginExtension
+ *
+ * @subsection reader_management Reader Management
+ *
+ * - keyple::plugin::pcsc::PcscReader
+ *   Main interface for PC/SC reader configuration and control
+ *
+ *   Provides configuration for:
+ *   - **Sharing Mode**: SHARED or EXCLUSIVE card access
+ *   - **ISO Protocol**: T0, T1, TCL, or ANY protocol selection
+ *   - **Disconnection Mode**: RESET, LEAVE, UNPOWER, or EJECT card handling
+ *   - **Transmission Mode**: Contact or contactless reader type
+ *   - **Control Commands**: Direct reader communication for proprietary features
+ *
+ * @subsection protocol_support Protocol Support
+ *
+ * - keyple::plugin::pcsc::PcscCardCommunicationProtocol
+ *   Card communication protocol definitions
+ *
+ * - keyple::plugin::pcsc::PcscSupportedContactlessProtocol
+ *   Predefined protocols for contactless cards (ISO 14443-4, Mifare, etc.)
+ *
+ * - keyple::plugin::pcsc::PcscSupportedContactProtocol
+ *   Predefined protocols for contact cards
+ *
+ * @subsection lowlevel_pcsc Low-Level PC/SC API
+ *
+ * - keyple::plugin::pcsc::cpp::TerminalFactory
+ *   Factory for accessing PC/SC terminals
+ *
+ * - keyple::plugin::pcsc::cpp::CardTerminals
+ *   Manager for available card terminals
+ *
+ * - keyple::plugin::pcsc::cpp::CardTerminal
+ *   Individual terminal control and status
+ *
+ * - keyple::plugin::pcsc::cpp::Card
+ *   Card connection and communication
+ *
+ * - keyple::plugin::pcsc::cpp::CardChannel
+ *   APDU transmission channel
+ *
+ * @section exceptions Exception Handling
+ *
+ * The plugin implements PC/SC-specific exceptions:
+ *
+ * - keyple::plugin::pcsc::cpp::exception::CardException
+ *   Base class for card-related exceptions
+ *
+ * - keyple::plugin::pcsc::cpp::exception::CardNotPresentException
+ *   Thrown when a card operation is attempted without a card present
+ *
+ * - keyple::plugin::pcsc::cpp::exception::CardTerminalException
+ *   Thrown when terminal communication fails
+ *
+ * @section resources Additional Resources
+ *
+ * - **Documentation**: [keyple.org](https://keyple.org)
+ * - **API Documentation**: [docs.keyple.org/keyple-plugin-pcsc-cpp-lib](https://docs.keyple.org/keyple-plugin-cpp-java-lib)
+ * - **Examples**: [github.com/eclipse/keyple-cpp-example](https://github.com/eclipse/keyple-cpp-example)
+ * - **PC/SC Specification**: [pcscworkgroup.com](https://pcscworkgroup.com)
+ */
